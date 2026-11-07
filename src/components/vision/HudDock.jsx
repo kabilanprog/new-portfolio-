@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Dna, Atom, Feather } from 'lucide-react';
+import { Dna, Atom, Feather, Radio, Activity } from 'lucide-react';
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   MODE CONFIGURATION: Unified celestial palette with mode accents
+   MODE CONFIGURATION: Modern Cyber-Fantasy Neon Palette
    ══════════════════════════════════════════════════════════════════════════════ */
 const MODE_CONFIG = {
   bio: {
@@ -13,10 +13,10 @@ const MODE_CONFIG = {
     shortLabel: 'Bio-AI',
     microLabel: 'Bio',
     icon: Dna,
-    accent: '#a855f7', // violet
-    glow: 'rgba(168, 85, 247, 0.35)',
-    borderGlow: 'rgba(168, 85, 247, 0.55)',
-    bgActive: 'rgba(168, 85, 247, 0.18)',
+    accent: '#A855F7', // Neon Violet
+    glow: 'rgba(168, 85, 247, 0.45)',
+    borderGlow: 'rgba(168, 85, 247, 0.7)',
+    bgActive: 'rgba(168, 85, 247, 0.22)',
   },
   astro: {
     id: 'astro',
@@ -25,10 +25,10 @@ const MODE_CONFIG = {
     shortLabel: 'Astro',
     microLabel: 'Astro',
     icon: Atom,
-    accent: '#22d3ee', // cyan
-    glow: 'rgba(34, 211, 238, 0.35)',
-    borderGlow: 'rgba(34, 211, 238, 0.55)',
-    bgActive: 'rgba(34, 211, 238, 0.18)',
+    accent: '#22D3EE', // Electric Cyan
+    glow: 'rgba(34, 211, 238, 0.45)',
+    borderGlow: 'rgba(34, 211, 238, 0.7)',
+    bgActive: 'rgba(34, 211, 238, 0.22)',
   },
   philosophy: {
     id: 'philosophy',
@@ -37,10 +37,10 @@ const MODE_CONFIG = {
     shortLabel: 'Phil',
     microLabel: 'Phil',
     icon: Feather,
-    accent: '#f5d07a', // amber
-    glow: 'rgba(245, 208, 122, 0.35)',
-    borderGlow: 'rgba(245, 208, 122, 0.55)',
-    bgActive: 'rgba(245, 208, 122, 0.18)',
+    accent: '#F59E0B', // Solar Amber
+    glow: 'rgba(245, 158, 11, 0.45)',
+    borderGlow: 'rgba(245, 158, 11, 0.7)',
+    bgActive: 'rgba(245, 158, 11, 0.22)',
   },
 };
 
@@ -50,21 +50,15 @@ const MODES = [MODE_CONFIG.bio, MODE_CONFIG.astro, MODE_CONFIG.philosophy];
    ASTRONOMICAL FORMULA: GMST & Local Sidereal Time for Coimbatore (76.9558° E)
    ══════════════════════════════════════════════════════════════════════════════ */
 function calculateLST(date, longitudeDegrees = 76.9558) {
-  // Julian Date calculation from Unix epoch milliseconds
   const jd = 2440587.5 + date.getTime() / 86400000;
-  // Days elapsed since J2000.0 (JD 2451545.0)
   const d = jd - 2451545.0;
   const t = d / 36525.0;
 
-  // Greenwich Mean Sidereal Time in degrees (standard IAU polynomial)
   let gmstDeg =
     (280.46061837 + 360.98564736629 * d + 0.000387933 * t * t - (t * t * t) / 38710000) % 360;
   if (gmstDeg < 0) gmstDeg += 360;
 
-  // Convert GMST to decimal hours (15° per hour)
   const gmstHours = gmstDeg / 15;
-
-  // Local Sidereal Time = GMST + Longitude / 15 (East is positive)
   let lstHours = (gmstHours + longitudeDegrees / 15) % 24;
   if (lstHours < 0) lstHours += 24;
 
@@ -86,7 +80,6 @@ function formatIST(date) {
       hour12: false,
     }).format(date);
   } catch {
-    // Fallback if Intl timeZone is unavailable
     const istMs = date.getTime() + (5.5 * 60 + date.getTimezoneOffset()) * 60000;
     const d = new Date(istMs);
     const pad = (n) => String(n).padStart(2, '0');
@@ -94,10 +87,6 @@ function formatIST(date) {
   }
 }
 
-/**
- * Custom hook to track real-time IST and Local Sidereal Time
- * Updates every second, properly cleaned up on unmount.
- */
 function useCelestialClock(longitude = 76.9558) {
   const [clock, setClock] = useState(() => {
     const now = new Date();
@@ -125,31 +114,29 @@ function useCelestialClock(longitude = 76.9558) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   ANIMATED EQUALIZER BARS (4 bars, reactive to audio state & reduced-motion)
+   ANIMATED EQUALIZER BARS (Reactive to audio state & current accent)
    ══════════════════════════════════════════════════════════════════════════════ */
-function EqualizerBars({ isAudioOn, shouldReduceMotion }) {
-  const bars = [
-    { id: 1, animClass: 'animate-eq-bar-1' },
-    { id: 2, animClass: 'animate-eq-bar-2' },
-    { id: 3, animClass: 'animate-eq-bar-3' },
-    { id: 4, animClass: 'animate-eq-bar-4' },
-  ];
+function EqualizerBars({ isAudioOn, accentColor, shouldReduceMotion }) {
+  const bars = [1, 2, 3, 4];
 
   return (
-    <div
-      className="flex items-center gap-[2.5px] h-3.5 px-0.5 flex-shrink-0"
-      aria-hidden="true"
-    >
-      {bars.map((bar) => {
-        let heightClass = 'h-[3px] opacity-40';
-        if (isAudioOn) {
-          heightClass = shouldReduceMotion ? 'h-2.5 opacity-90' : `${bar.animClass} opacity-100`;
-        }
-
+    <div className="flex items-center gap-[2.5px] h-3.5 px-0.5 flex-shrink-0" aria-hidden="true">
+      {bars.map((bar, i) => {
         return (
           <span
-            key={bar.id}
-            className={`w-[2.5px] rounded-full bg-[#f5d07a] transition-all duration-300 ${heightClass}`}
+            key={bar}
+            className={`w-[2.5px] rounded-full transition-all duration-300 ${
+              isAudioOn
+                ? shouldReduceMotion
+                  ? 'h-3 opacity-100'
+                  : 'animate-pulse opacity-100'
+                : 'h-[3px] opacity-40'
+            }`}
+            style={{
+              backgroundColor: isAudioOn ? accentColor : '#94A3B8',
+              height: isAudioOn && !shouldReduceMotion ? `${8 + ((i * 4) % 10)}px` : undefined,
+              animationDuration: `${0.4 + i * 0.15}s`,
+            }}
           />
         );
       })}
@@ -158,7 +145,7 @@ function EqualizerBars({ isAudioOn, shouldReduceMotion }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   MAIN COMPONENT: Celestial Astrolabe Dock
+   MAIN COMPONENT: Cybernetic HUD Console Dock
    ══════════════════════════════════════════════════════════════════════════════ */
 export default function HudDock({
   horizonMode = 'bio',
@@ -170,7 +157,7 @@ export default function HudDock({
   const shouldReduceMotion = useReducedMotion();
   const currentMode = MODE_CONFIG[horizonMode] || MODE_CONFIG.bio;
 
-  // Keyboard navigation: keys 1, 2, 3 switch horizon mode (ignored while typing in inputs)
+  // Keyboard navigation: 1, 2, 3 switches modes
   useEffect(() => {
     const handleKeyDown = (e) => {
       const target = e.target;
@@ -196,94 +183,76 @@ export default function HudDock({
 
   return (
     <motion.div
-      initial={shouldReduceMotion ? false : { opacity: 0, y: -12 }}
+      initial={shouldReduceMotion ? false : { opacity: 0, y: -15 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={
-        shouldReduceMotion
-          ? { duration: 0 }
-          : { duration: 0.5, ease: [0.16, 1, 0.3, 1] }
-      }
-      className="relative mb-6 sm:mb-8 w-full max-w-4xl lg:max-w-5xl rounded-2xl sm:rounded-full bg-black/55 backdrop-blur-xl border font-mono transition-shadow duration-500 p-2 sm:px-4 sm:py-2 select-none"
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      className="relative mb-8 w-full max-w-4xl lg:max-w-5xl rounded-2xl sm:rounded-full bg-[#08080E]/80 backdrop-blur-2xl border border-white/10 font-mono transition-shadow duration-500 p-2 sm:px-4 sm:py-2.5 select-none"
       style={{
-        borderColor: 'rgba(200, 146, 42, 0.35)',
-        boxShadow: `0 0 28px -4px ${currentMode.glow}, 0 10px 30px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 0 rgba(245, 208, 122, 0.22)`,
+        boxShadow: `0 0 35px -8px ${currentMode.glow}, 0 10px 40px -10px rgba(0, 0, 0, 0.9), inset 0 1px 0 0 rgba(255, 255, 255, 0.1)`,
+        borderColor: `${currentMode.accent}33`,
       }}
     >
-      {/* ── Tarot Card Echo Corner Ticks (Left & Right) ── */}
-      <span
-        aria-hidden="true"
-        className="hidden lg:block absolute left-2.5 top-1/2 -translate-y-1/2 text-[#c8922a]/40 text-[9px] pointer-events-none select-none font-serif"
-      >
-        ✦
-      </span>
-      <span
-        aria-hidden="true"
-        className="hidden lg:block absolute right-2.5 top-1/2 -translate-y-1/2 text-[#c8922a]/40 text-[9px] pointer-events-none select-none font-serif"
-      >
-        ✦
-      </span>
-
-      {/* ── Responsive Container ──
-          <640px: 2-row grid (Row 1: Telemetry + Audio, Row 2: Full-width segmented tabs)
-          ≥640px: single row flex (Telemetry | Mode Switcher | Audio)
-      */}
-      <div className="grid grid-cols-[1fr_auto] sm:flex sm:flex-row items-center justify-between gap-2.5 sm:gap-3 w-full">
+      <div className="grid grid-cols-[1fr_auto] sm:flex sm:flex-row items-center justify-between gap-3 w-full">
         
         {/* ── 1. Telemetry Block ── */}
-        <div className="col-start-1 row-start-1 flex items-center gap-2 sm:gap-2.5 flex-shrink-0 whitespace-nowrap pl-1 sm:pl-2">
-          {/* Pulsing Concentric Status Ring */}
-          <div
-            className="relative flex items-center justify-center w-3.5 h-3.5 flex-shrink-0"
-            title="Telemetry Core Online"
-          >
+        <div className="col-start-1 row-start-1 flex items-center gap-2.5 sm:gap-3 flex-shrink-0 whitespace-nowrap pl-1 sm:pl-2">
+          {/* Radar Scanner Beacon */}
+          <div className="relative flex items-center justify-center w-4 h-4 flex-shrink-0">
             <span
-              className={`absolute inset-0 rounded-full bg-[#f5d07a]/30 ${
-                shouldReduceMotion ? '' : 'animate-ping-ring'
-              }`}
+              className="absolute inset-0 rounded-full animate-ping opacity-60"
+              style={{ backgroundColor: currentMode.accent }}
             />
-            <span className="absolute w-2.5 h-2.5 rounded-full bg-[#c8922a]/20 border border-[#f5d07a]/50" />
-            <span className="relative w-1.5 h-1.5 rounded-full bg-[#f5d07a] shadow-[0_0_6px_#f5d07a]" />
+            <span
+              className="absolute w-3 h-3 rounded-full border opacity-80"
+              style={{ borderColor: currentMode.accent }}
+            />
+            <span
+              className="relative w-1.5 h-1.5 rounded-full shadow-sm"
+              style={{
+                backgroundColor: currentMode.accent,
+                boxShadow: `0 0 8px ${currentMode.accent}`,
+              }}
+            />
           </div>
 
           {/* Location & Real-Time Clock */}
           <div className="flex flex-col justify-center leading-tight whitespace-nowrap">
-            {/* Line 1: Location & Coordinates (Never hidden on mobile) */}
-            <div className="text-[11px] font-medium tracking-[0.12em] text-[#e0d8c7] flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
-              <span className="font-semibold text-white">COIMBATORE</span>
-              <span className="text-[#c8922a]/40 hidden sm:inline">·</span>
-              <span className="text-slate-400 font-normal hidden sm:inline">
-                11.0168° N, 76.9558° E
+            <div className="text-[11px] font-bold tracking-[0.15em] text-white flex items-center gap-1.5 whitespace-nowrap">
+              <span>COIMBATORE</span>
+              <span className="text-white/30 hidden sm:inline">·</span>
+              <span className="text-slate-400 font-normal hidden sm:inline text-[10px]">
+                11.02° N, 76.96° E
               </span>
             </div>
 
-            {/* Line 2: Real-time IST & Local Sidereal Time */}
-            <div className="text-[10px] tracking-[0.12em] text-slate-400 tabular-nums flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
-              <span>IST {clock.ist}</span>
-              {/* LST hidden on 640-1023px, visible on >=1024px desktop */}
-              <span className="text-[#c8922a]/40 hidden lg:inline">·</span>
-              <span className="text-slate-400/90 hidden lg:inline">
+            <div className="text-[10px] tracking-[0.12em] text-slate-400 tabular-nums flex items-center gap-1.5 whitespace-nowrap">
+              <span className="text-slate-300">IST {clock.ist}</span>
+              <span className="text-white/20 hidden lg:inline">·</span>
+              <span className="text-purple-300/80 hidden lg:inline">
                 LST {clock.lst}
               </span>
             </div>
           </div>
 
-          {/* Core Synchronized Status Chip (soft gold / emerald-white) */}
-          <div className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#c8922a]/10 border border-[#c8922a]/30 text-[10px] tracking-wider font-mono whitespace-nowrap flex-shrink-0">
-            <span className="text-[#c8922a]">CORE:</span>
-            <span className="text-[#e2e8f0] font-medium">SYNCHRONIZED</span>
+          {/* Core Synchronized Status Chip */}
+          <div className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-[10px] tracking-wider font-mono text-emerald-300 whitespace-nowrap flex-shrink-0 shadow-[0_0_12px_rgba(16,185,129,0.15)]">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-emerald-400 font-bold">CORE:</span>
+            <span>SYNCHRONIZED</span>
           </div>
-          {/* Compact Chip for mobile & tablet */}
-          <div className="inline-flex xl:hidden items-center px-1.5 py-0.5 rounded-full bg-[#c8922a]/10 border border-[#c8922a]/30 text-[9px] tracking-wider font-mono text-[#e2e8f0] whitespace-nowrap flex-shrink-0">
+
+          <div className="inline-flex xl:hidden items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-[9px] tracking-wider font-mono text-emerald-300 whitespace-nowrap flex-shrink-0">
+            <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
             <span>SYNC</span>
           </div>
         </div>
 
-        {/* ── 2. Mode Switcher (Accessible Tablist with Shared Sliding Pill) ── */}
+        {/* ── 2. Mode Switcher (Sliding Pill Tablist) ── */}
         <div
           role="tablist"
           aria-label="Horizon Vision Modes"
-          className="col-span-2 row-start-2 sm:col-span-1 sm:row-start-auto relative flex items-center w-full sm:w-auto p-1 rounded-full bg-black/45 border border-[#c8922a]/25 backdrop-blur-md"
+          className="col-span-2 row-start-2 sm:col-span-1 sm:row-start-auto relative flex items-center w-full sm:w-auto p-1 rounded-full bg-black/60 border border-white/10 backdrop-blur-xl"
         >
           {MODES.map((mode) => {
             const isActive = horizonMode === mode.id;
@@ -295,16 +264,15 @@ export default function HudDock({
                 role="tab"
                 id={`hud-tab-${mode.id}`}
                 aria-selected={isActive}
-                aria-controls={`hud-panel-${mode.id}`}
                 tabIndex={isActive ? 0 : -1}
                 onClick={() => setHorizonMode(mode.id)}
-                className={`relative z-10 flex-1 sm:flex-initial flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs tracking-[0.12em] uppercase transition-colors duration-200 outline-none whitespace-nowrap focus-visible:ring-1 focus-visible:ring-[#f5d07a] ${
+                className={`relative z-10 flex-1 sm:flex-initial flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs tracking-[0.14em] uppercase transition-colors duration-200 outline-none whitespace-nowrap cursor-pointer ${
                   isActive
-                    ? 'text-white font-medium'
-                    : 'text-slate-400 hover:text-[#f0ede8]'
+                    ? 'text-white font-bold'
+                    : 'text-slate-400 hover:text-white'
                 }`}
               >
-                {/* Framer-Motion Shared Sliding Pill Indicator */}
+                {/* Sliding indicator */}
                 {isActive && (
                   <motion.div
                     layoutId="activeHudTab"
@@ -312,74 +280,59 @@ export default function HudDock({
                     style={{
                       backgroundColor: mode.bgActive,
                       border: `1px solid ${mode.borderGlow}`,
-                      boxShadow: `0 0 16px ${mode.glow}`,
+                      boxShadow: `0 0 20px ${mode.glow}`,
                     }}
                     transition={
                       shouldReduceMotion
                         ? { duration: 0 }
-                        : { type: 'spring', stiffness: 380, damping: 30 }
+                        : { type: 'spring', stiffness: 360, damping: 28 }
                     }
                   />
                 )}
 
                 <span className="relative z-10 flex items-center gap-1.5 whitespace-nowrap">
                   <Icon
-                    size={13}
+                    size={14}
                     style={{
                       color: isActive ? mode.accent : 'currentColor',
-                      filter:
-                        isActive && !shouldReduceMotion
-                          ? `drop-shadow(0 0 6px ${mode.accent})`
-                          : 'none',
-                      transition: 'color 0.25s ease, filter 0.25s ease',
+                      filter: isActive ? `drop-shadow(0 0 8px ${mode.accent})` : 'none',
                     }}
                   />
-                  {/* Desktop label */}
-                  <span className="hidden lg:inline whitespace-nowrap">{mode.label}</span>
-                  {/* Tablet label */}
-                  <span className="hidden sm:inline lg:hidden whitespace-nowrap">{mode.shortLabel}</span>
-                  {/* Mobile label */}
-                  <span className="inline sm:hidden whitespace-nowrap">{mode.microLabel}</span>
-
-                  {/* Keyboard Shortcut Hint (only shown on Philosophy tab, hidden on mobile) */}
-                  {mode.id === 'philosophy' && (
-                    <kbd
-                      aria-hidden="true"
-                      className="hidden sm:inline-block ml-0.5 px-1 py-0.2 rounded text-[9px] text-[#c8922a]/70 bg-[#c8922a]/10 border border-[#c8922a]/20"
-                    >
-                      {mode.key}
-                    </kbd>
-                  )}
+                  <span className="hidden lg:inline">{mode.label}</span>
+                  <span className="hidden sm:inline lg:hidden">{mode.shortLabel}</span>
+                  <span className="inline sm:hidden">{mode.microLabel}</span>
                 </span>
               </button>
             );
           })}
         </div>
 
-        {/* ── 3. Ambient Audio Toggle (Live Equalizer Feedback) ── */}
+        {/* ── 3. Ambient Audio Toggle ── */}
         <div className="col-start-2 row-start-1 sm:col-start-auto sm:row-start-auto flex justify-end flex-shrink-0 whitespace-nowrap pr-1 sm:pr-2">
           <button
             type="button"
             onClick={onToggleAudio}
             aria-pressed={isAudioOn}
-            aria-label={`Toggle ambient soundscape, currently ${isAudioOn ? 'active' : 'inactive'}`}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-300 text-[11px] uppercase tracking-[0.12em] select-none outline-none whitespace-nowrap focus-visible:ring-1 focus-visible:ring-[#f5d07a] ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-300 text-[11px] uppercase tracking-[0.14em] select-none outline-none whitespace-nowrap cursor-pointer ${
               isAudioOn
-                ? 'bg-[#c8922a]/15 border-[#f5d07a]/50 text-[#f5d07a] shadow-[0_0_14px_rgba(200,146,42,0.25)]'
-                : 'bg-black/40 border-[#c8922a]/25 text-slate-400 hover:text-[#f0ede8] hover:border-[#c8922a]/50'
+                ? 'bg-white/10 text-white shadow-lg'
+                : 'bg-black/40 border-white/10 text-slate-400 hover:text-white hover:border-white/20'
             }`}
+            style={{
+              borderColor: isAudioOn ? currentMode.accent : undefined,
+              boxShadow: isAudioOn ? `0 0 16px ${currentMode.glow}` : undefined,
+            }}
           >
             <EqualizerBars
               isAudioOn={isAudioOn}
+              accentColor={currentMode.accent}
               shouldReduceMotion={shouldReduceMotion}
             />
-            {/* Full text on tablet & desktop */}
-            <span className="hidden sm:inline whitespace-nowrap">
+            <span className="hidden sm:inline whitespace-nowrap font-semibold">
               AUDIO · {isAudioOn ? 'ON' : 'OFF'}
             </span>
-            {/* Compact text on mobile */}
-            <span className="inline sm:hidden whitespace-nowrap">
-              {isAudioOn ? 'AUDIO: ON' : 'AUDIO: OFF'}
+            <span className="inline sm:hidden whitespace-nowrap font-semibold">
+              {isAudioOn ? 'ON' : 'OFF'}
             </span>
           </button>
         </div>
